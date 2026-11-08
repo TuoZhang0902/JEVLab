@@ -1,0 +1,2 @@
+# Add pinned dependencies after the exact JEV implementation is confirmed.
+# Suggested starting point: torch, numpy, pandas, matplotlib, pytest
