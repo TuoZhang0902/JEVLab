@@ -50,4 +50,4 @@ Additional references are listed in the [research specification](docs/research_p
 
 Use focused changes with clear descriptions and reproducible checks. Keep experiment configurations and compact results traceable; exclude credentials, model weights, and large datasets from Git.
 
-**Team:** Tuo Zhang and Charles Gao
+**Team:** Charles Gao, Tuo Zhang, and Jiahao Zhang
