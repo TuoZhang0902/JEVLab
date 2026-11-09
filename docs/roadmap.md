@@ -59,4 +59,4 @@ Record repository commit/configuration hash; model/tokenizer/processor revisions
 
 The existing `requirements.txt` is unpinned and unvalidated. Pin a tested environment only after implementation approval. Never commit credentials or large weights/data. Check ignore rules so compact manifests and predictions remain tracked or have a documented artifact location.
 
-Use focused branches and PRs to `main`; no force pushes or unrelated refactors. State hypothesis, changed behavior, checks/commands, observed outputs, cost, and limitations in experiment PRs. Separate documentation and experiment code. Review the diff and status before committing; preserve the teammate's proposal and Git history.
+Use focused branches and PRs to `main`; no force pushes or unrelated refactors. State hypothesis, changed behavior, checks/commands, observed outputs, cost, and limitations in experiment PRs. Separate documentation and experiment code. Review the diff and status before committing.

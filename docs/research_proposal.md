@@ -2,12 +2,6 @@
 
 Updated 2026-11-09. **Planning specification; experiments are not implemented.** Numerical settings are proposed defaults to approve before coding. [Roadmap](roadmap.md) · [Overview](../README.md)
 
-## Relationship to earlier work
-
-The initial proposal studied frozen representations from an unresolved “one-shot JEV” model. The teammate's subsequent roadmap expanded a Jev capability study to text, images, and simulated navigation. Its three-stage progression, controlled depth, and cautious reporting remain central.
-
-The [proposal at commit 1159387](history/2026-11-09-system-one-proposal.md) is retained verbatim. The current direction changes the central experiment to controlled filler-token interventions because exact token IDs, logits, and model access support stronger comparisons than an unspecified training objective or opaque decision API. Jev may later be a behavioral comparator; neither Jev nor JEPA is required. General scene understanding and large robotics simulators are deferred to keep the course project focused.
-
 ## Question and interpretation
 
 Do additional token positions improve reliable compositional reasoning and evidence sensitivity, or merely change response behavior? Does a fixed intervention generalize to equivalent visual graphs and eventually sequential decisions?
@@ -87,4 +81,13 @@ Navigation tests H5 in a deterministic fully observable gridworld with position,
 
 ## Related work
 
-See the [README literature list](../README.md#selected-literature). Additional counterfactual precedent: [DeFacto](https://arxiv.org/abs/2509.20912). Sources motivate controls and limit novelty claims; none constitutes JEVLab experimental evidence.
+Core filler-token references are in the [README](../README.md#selected-literature). Further context:
+
+- [Coconut](https://arxiv.org/abs/2412.06769): recurrent continuous thoughts.
+- [Mull-Tokens](https://arxiv.org/abs/2512.10941): learned multimodal latent tokens.
+- [Not All LLM Reasoning is Visible in the Chain-of-Thought](https://arxiv.org/abs/2607.22925): synthetic filler studies and mechanistic diagnostics.
+- [GraphVerse](https://arxiv.org/abs/2608.06769) and [TwinICL](https://arxiv.org/abs/2609.15028): visual graph and paired-modality evaluation.
+- [DeFacto](https://arxiv.org/abs/2509.20912): counterfactual evidence consistency.
+- [Latent Reasoning VLA](https://proceedings.mlr.press/v306/bai26h.html): embodied context.
+
+These sources motivate controls and limit novelty claims; none constitutes JEVLab experimental evidence.
