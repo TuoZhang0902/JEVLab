@@ -1,0 +1,40 @@
+\documentclass{article}
+\PassOptionsToPackage{numbers,sort&compress}{natbib}
+\usepackage[preprint]{neurips_2026}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage[hidelinks]{hyperref}
+% Course identification only; preserve the supplied style's layout and fonts.
+\makeatletter
+\renewcommand{\@noticestring}{COMS W4776: Neural Networks and Deep Learning. Columbia University. Fall 2026 project proposal.}
+\makeatother
+\title{ReasonSpace: Extra Tokens and Evidence Sensitivity\\in Compositional Reasoning}
+\author{Charles Gao \qquad Tuo Zhang \qquad Jiahao Zhang\\Columbia University}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+Additional token positions may provide a language model with useful computation even when their input symbols convey no task-specific information. However, a higher answer accuracy could also reflect formatting preferences or altered attention rather than more reliable evidence use. We ask: \textbf{Do information-free tokens improve compositional reasoning and evidence sensitivity, and do these effects extend from text to visual representations?} ReasonSpace will test this question with synthetic graph problems whose relevant and irrelevant relationships can be changed independently. Our intended contribution is a controlled analysis of whether filler-induced gains survive these changes, across reasoning depths and matched input representations. We seek informative positive or negative results, not a new claim that filler tokens can help, nor a behavioral proof of an internal reasoning algorithm.
+
+\section{Related Work}
+Pause-token training demonstrates that delaying answers can improve performance when models learn to use additional positions \citep{goyal2023}. Pfau et al.\ show that meaningless fillers support computation on specially trained algorithmic tasks, while emphasizing the difficulty of learning this behavior \citep{pfau2024}. Jang et al.\ investigate fillers inserted only at inference and find sensitivity to token identity, count, and placement \citep{jang2025}. More recent synthetic-task experiments include filler effects and mechanistic diagnostics \citep{baherwani2026}. Thus, a punctuation sweep alone would offer limited insight; our focus is the relationship between such interventions and correctness under controlled evidence changes.
+
+Fixed fillers also differ from learned or generated reasoning states. Coconut feeds input-dependent hidden states back as subsequent embeddings \citep{hao2024}, while Mull-Tokens trains multimodal latent tokens \citep{ray2025}. These approaches change training or the computation pathway and are not interchangeable with fixed prompt positions. Ablate-to-Validate shows why accuracy alone can misrepresent the use of continuous thought-token content \citep{zhang2026}. We adopt its caution about content utilization without treating replacement sensitivity as definitive mechanistic evidence. Our text--image comparison will isolate presentation effects on a shared task; it does not establish general visual reasoning or transfer learned through training.
+
+\section{Method and Proposed Investigation}
+\textbf{Tasks and counterfactuals.} We will generate 12-node directed graphs with two relation types, each a permutation over nodes. A query specifies a start node and a relation sequence of length 1, 2, or 4; deterministic traversal gives its unique endpoint. Each family contains an original problem, a relevant two-edge target swap that changes the endpoint, and an irrelevant swap that preserves it. Swaps preserve graph size and degrees. Four answer choices are fixed within a family and balanced across families. We will verify all answers, exclude duplicate graph/query structures across development and test splits, and keep related variants together. Neutral labels, shuffled facts, node-renaming controls, and recorded prompt lengths reduce shortcuts and length confounds.
+
+\textbf{Model and interventions.} Our primary candidate is Qwen2.5-VL-3B-Instruct, allowing one open-weight checkpoint for text and vision. The core is inference-only: no fillers versus 16 or 64 dot-token positions after the problem and before the answer cue. Controls use 64 commas, a fixed punctuation mixture, or pre-problem dots. Actual vocabulary IDs and positions will be checked after prompt assembly. A generated intermediate-node sequence provides an explicit-reasoning comparator; its content is input-dependent, unlike fixed fillers. Equal token counts do not imply equal runtime. Forced decoding of the identical filler sequence is only a prefill-equivalence check. Learned embeddings and recurrent latent reasoning are outside the core. Chance, majority-choice, and an exact solver provide sanity baselines.
+
+\textbf{Hypotheses and evaluation.} H1 predicts that 64 post-problem dots improve answer-changing pair correctness over no filler. H2 predicts placement-dependent effects; H3 predicts that gains persist under irrelevant edits and nuisance changes. For original/edited inputs $(x_i,x_i')$ with answers $(y_i,y_i')$, define
+\begin{equation}
+P_i(c)=\mathbf{1}\!\left[\hat y_c(x_i)=y_i\ \land\ \hat y_c(x_i')=y_i'\right].
+\end{equation}
+The primary contrast is the mean paired difference $P_i(64)-P_i(0)$, equally weighting depths 2 and 4. We will use fixed-position answer-label logits, audit greedy generation, and report 95\% family-bootstrap intervals. Five percentage points is the prespecified practical-effect threshold; intervals may support, rule out, or leave this benefit unresolved. Secondary metrics include ordinary accuracy, answer-preserving pair correctness, depth effects, intermediate-step validity, latency, and peak memory. Invariance alone can reward constant wrong answers. We will fix prompts, precision, scoring, and model revisions, and correct secondary significance tests for multiple comparisons.
+
+\textbf{Feasibility and extensions.} A pilot of 60 families per depth will validate measurement and identify floor/ceiling effects without selecting for filler gains. Confirmation will use 400--800 families per depth, fixed using pilot-based precision estimates and the compute budget. We provisionally budget 20--40 GPU-hours for text on one 16--24 GB GPU, subject to profiling. The planned vision stage renders equivalent graphs with stable layouts across edits and applies the same fixed intervention. It proceeds after legibility checks, $\geq85\%$ one-hop accuracy, and $\geq90\%$ targeted edge-extraction accuracy on development data. H4 predicts positive visual pair-correctness gains under the unchanged intervention. We will compare paired text/image effects and report perception limitations. Reproducible configurations and predictions will accompany the study. Simulated navigation may later test whether evidence-sensitive gains improve episode success, but is not a committed course deliverable. No preliminary results are claimed.
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+\end{document}
