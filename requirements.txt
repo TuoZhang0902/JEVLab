@@ -1,2 +1,18 @@
-# Add pinned dependencies after the exact JEV implementation is confirmed.
-# Suggested starting point: torch, numpy, pandas, matplotlib, pytest
+# Core research dependencies
+numpy
+pandas
+matplotlib
+scikit-learn
+torch
+pytest
+
+# Image experiments (optional)
+# pillow
+
+# Navigation simulation (optional)
+# gymnasium
+# minigrid
+# pygame
+
+# Jev API integration
+# Add official SDK or HTTP client after API verification.

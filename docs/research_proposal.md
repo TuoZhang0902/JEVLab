@@ -1,34 +1,158 @@
-# Research Proposal (v0.1 — tentative)
 
-## Motivation
+# JEVLab Research Plan
 
-The TA suggested a JEV-style model whose training is described as 'one-shot', rather than explicitly optimized for deep reasoning. We want to investigate whether the learned representations nonetheless encode information that can support tasks requiring multiple inference steps.
+## Working Title
 
-## Main research question
+Evaluating Reasoning and Decision-Making Capabilities
+of System One Models: From Text to Simulated Navigation
 
-Can a model trained using a one-shot objective provide useful representations for multi-step reasoning tasks, and how does performance change with reasoning depth?
+## 1. Motivation
 
-## Hypotheses (to test, not assume)
+Modern language models often rely on autoregressive
+generation and explicit chain-of-thought prompting
+to solve complex reasoning problems.
 
-- H1: A frozen JEV representation may support some multi-step tasks through a lightweight probe.
-- H2: Performance may degrade as compositional depth increases.
-- H3: Improvements over a non-JEV baseline may depend on task type and probe capacity.
+Jev, developed by TypeSafe AI, is designed for
+direct, structured, probabilistic decision-making.
 
-## Experimental boundaries
+This raises the question of whether fast,
+direct-decision models can support tasks involving
+multi-step reasoning and sequential decision-making.
 
-- Do not change the pretrained model's objective to explicitly train deep reasoning for the main experiment.
-- Keep downstream readout capacity controlled and comparable.
-- Define 'one-shot' precisely after identifying the paper: it may refer to prediction, inference, or another mechanism.
-- Separate representation quality from end-to-end generated reasoning.
+Our research investigates these capabilities
+across text, visual information, and simulated
+navigation environments.
 
-## Open decisions
+## 2. Main Research Question
 
-- Exact JEV paper / GitHub link and official terminology
-- Text task and dataset
-- Whether weights are available and whether training from scratch is required
-- Baselines and evaluation metrics
-- Course compute/time constraints
+Can Jev perform multi-step reasoning and reliable
+sequential decision-making without explicitly
+generating intermediate reasoning steps?
 
-## First milestone
+## 3. Research Phases
 
-Confirm the paper, reproduce its simplest supported inference or training example, and finalize a reasoning-depth benchmark before implementing larger experiments.
+### Phase 1: Text Reasoning
+
+Objective:
+Evaluate Jev's performance on multi-hop
+logical reasoning tasks.
+
+Experiments:
+- Controlled relational reasoning datasets
+- Different reasoning chain lengths
+- Distractor statements
+- Direct-answer evaluation
+- Comparison with baseline neural models
+
+Metrics:
+- Accuracy
+- Confidence calibration
+- Inference latency
+- Generalization to unseen problem structures
+
+### Phase 2: Image-Based Decisions
+
+Objective:
+Investigate whether Jev can make reliable
+decisions grounded in visual information.
+
+Experiments:
+- Object relationship reasoning
+- Spatial reasoning
+- Visual scene interpretation
+- Decision-making based on object positions
+
+A separate perception module may be required
+to convert images into structured text states.
+
+Metrics:
+- Decision accuracy
+- Spatial reasoning accuracy
+- Robustness to scene complexity
+
+### Phase 3: Navigation Simulation
+
+Objective:
+Evaluate whether repeated direct decisions
+can support multi-step tasks in interactive environments.
+
+Simulation:
+- Python GridWorld
+- MiniGrid
+- Optional robotics simulation environments
+
+Pipeline:
+
+Environment
+    |
+Observation
+    |
+Structured State
+    |
+Jev Decision Model
+    |
+Action Selection
+    |
+Environment Update
+    |
+Next Observation
+
+Experiments:
+- Goal-reaching tasks
+- Obstacle avoidance
+- Sequential navigation
+- Unseen environment generalization
+
+Metrics:
+- Task success rate
+- Average episode length
+- Invalid action rate
+- Decision latency
+
+## 4. Baseline Comparison
+
+Potential baselines include:
+
+- Lightweight Transformer classifier
+- Stepwise reasoning language model
+- Random decision policy
+- Classical planning methods such as BFS or A*
+
+Baselines will be selected based on the task
+and compared under controlled conditions.
+
+## 5. Research Hypotheses
+
+H1:
+Jev may solve multi-hop reasoning tasks without
+explicitly generating a reasoning trace.
+
+H2:
+Reasoning accuracy may decrease as the number
+of required inference steps increases.
+
+H3:
+Repeated direct decisions may support successful
+sequential navigation in simple environments.
+
+H4:
+The quality of visual state representations may
+significantly affect downstream decision performance.
+
+These hypotheses will be evaluated experimentally.
+
+## 6. Current Scope
+
+The NNDL Final Project will primarily focus on
+Text Reasoning.
+
+Image-based decision-making and navigation simulation
+are planned extensions, depending on API access,
+development progress, and available time.
+
+## 7. Current Status
+
+Research planning and experimental design.
+
+No trained models, completed experiments,
+or validated performance results are reported yet.

@@ -1,32 +1,160 @@
 # JEVLab
 
-Research workspace for evaluating whether representations from a **one-shot-trained JEV-style model** contain information useful for multi-step reasoning.
+Exploring reasoning and decision-making capabilities of
+System One AI models across text, vision, and simulated
+robotic environments.
 
-> **Working title / terminology:** “JEV” is the name reported from the TA discussion. Confirm the exact paper, model and training objective before choosing an implementation. This repository does **not** claim to implement or train JEV yet.
+## Overview
 
-## NNDL final project — tentative
+JEVLab is a research-oriented project investigating
+whether Jev, a System One decision model developed by
+TypeSafe AI, can perform complex reasoning and
+sequential decision-making without explicitly generating
+intermediate reasoning steps.
 
-**Research question:** To what extent can representations learned with a one-shot prediction objective support tasks requiring multi-step reasoning, without explicitly training the model to perform deep reasoning?
+The project begins as a final project for COMS W4776
+Neural Networks and Deep Learning at Columbia University,
+with the goal of supporting further research.
 
-**Important distinction:** We are **evaluating** whether the learned representations support reasoning, not prompting or training the model to produce chain-of-thought or adding a deep-reasoning objective.
+## Research Objective
 
-## Proposed evaluation protocol
+Our central research question is:
 
-1. Identify the exact JEV paper/repository and its input/output interface.
-2. Establish the intended one-shot baseline and a simple non-JEV baseline.
-3. Select tasks with controlled reasoning depth (e.g., 1, 2, 3+ compositional steps), matched for difficulty and data leakage.
-4. Freeze the pretrained encoder where feasible; train only the same lightweight readout/probe across baselines.
-5. Report accuracy by reasoning depth, and control for superficial cues, data size and probe capacity.
-6. Interpret results cautiously: success of a probe shows recoverable information in representations, not necessarily that the underlying model internally performs explicit reasoning.
+**Can a System One model support multi-step reasoning
+and reliable decision-making across increasingly complex
+tasks without explicit chain-of-thought generation?**
 
-## Structure
+We investigate this question through three stages:
 
-- `docs/` — paper notes, TA feedback and definitions
-- `configs/` — experiment configurations
-- `src/` — data, model adapters, evaluation code (to be implemented)
-- `experiments/` — experimental plans and results
-- `notebooks/` — exploratory work
+1. Text-based reasoning
+2. Image-based decision-making
+3. Navigation and robotic simulation
 
-## Status
+## Research Roadmap
 
-Project planning only. No model implementation, training or results yet.
+### Phase 1: Text Reasoning
+
+Evaluate Jev on logical and multi-hop reasoning tasks.
+
+Research questions:
+- Can Jev solve multi-step reasoning problems?
+- How does reasoning depth affect accuracy?
+- How well calibrated are its decisions?
+- How does its performance compare with neural baselines?
+
+Planned experiments:
+- Relational reasoning
+- Multi-hop logical inference
+- Reasoning depth analysis
+- Accuracy and confidence evaluation
+- Comparison with baseline models
+
+### Phase 2: Image-Based Decision-Making
+
+Investigate whether Jev can support decisions
+based on visual information.
+
+Planned experiments:
+- Object and spatial relationship reasoning
+- Scene understanding
+- Visual question answering
+- Structured decisions from visual observations
+
+If native image input is unsupported, visual information
+will be converted into structured representations
+using a separate perception module.
+
+### Phase 3: Navigation and Robotic Simulation
+
+Explore whether Jev can support sequential
+decision-making in simulated environments.
+
+Initial environments:
+- Python GridWorld
+- MiniGrid
+- Optional robotics simulators
+
+Planned tasks:
+- Goal-directed navigation
+- Obstacle avoidance
+- Sequential action selection
+- Decision-making under changing environments
+
+Jev will act as a high-level decision-making component.
+The simulation environment will execute selected actions.
+
+No physical robot is required for the initial experiments.
+
+## Proposed Evaluation Metrics
+
+### Text Reasoning
+- Accuracy
+- Reasoning depth
+- Confidence calibration
+- Inference latency
+
+### Image-Based Decisions
+- Decision accuracy
+- Spatial reasoning performance
+- Robustness to visual complexity
+
+### Navigation Simulation
+- Task success rate
+- Average steps to completion
+- Invalid action rate
+- Decision latency
+- Generalization to unseen environments
+
+## Repository Structure
+
+```text
+JEVLab/
+├── configs/
+├── docs/
+│   └── research_proposal.md
+├── experiments/
+│   ├── text/
+│   ├── image/
+│   └── navigation/
+├── notebooks/
+├── src/
+│   ├── adapters/
+│   ├── data/
+│   ├── models/
+│   ├── evaluation/
+│   └── simulation/
+├── .gitignore
+├── README.md
+└── requirements.txt
+```
+
+## Project Status
+
+**Current Stage: Research Planning**
+
+- [ ] Confirm Jev API access and capabilities
+- [ ] Develop text reasoning benchmark
+- [ ] Implement baseline models
+- [ ] Evaluate Jev on text reasoning tasks
+- [ ] Develop image-based decision experiments
+- [ ] Implement navigation simulation
+- [ ] Compare decision-making performance
+
+The current repository contains the research framework.
+No experimental results are claimed yet.
+
+## Future Directions
+
+- Multimodal decision-making
+- Sequential planning
+- Embodied AI
+- Robotic task planning
+- Decision-making under uncertainty
+
+## Authors
+
+Tuo Zhang and Charles
+
+Columbia University
+COMS W4776 — Neural Networks and Deep Learning
+Fall 2026
