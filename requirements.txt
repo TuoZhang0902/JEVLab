@@ -5,6 +5,8 @@ matplotlib
 scikit-learn
 torch
 pytest
+typesafe-sdk
+python-dotenv
 
 # Image experiments (optional)
 # pillow
