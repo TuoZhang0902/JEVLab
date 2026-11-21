@@ -1,93 +1,44 @@
-# Research specification: extra tokens and evidence sensitivity
+# ReasonSpace research specification
 
-Updated 2026-11-09. **Planning specification; experiments are not implemented.** Numerical settings are proposed defaults to approve before coding. [Roadmap](roadmap.md) · [Overview](../README.md)
+**Question.** When a model predicts where an agent ends up after four moves, does future-state supervision make it use the position recorded in its second latent slot? We will compare two training objectives on four-move routes with exactly four learned slots. This is a proposed experiment for COMS W4776. [Course proposal](proposal/reasonspace_proposal.pdf) · [Implementation roadmap](roadmap.md)
 
-## Question and interpretation
+## Benchmark and splits
 
-Do additional token positions improve reliable compositional reasoning and evidence sensitivity, or merely change response behavior? Does a fixed intervention generalize to equivalent visual graphs and eventually sequential decisions?
+An agent moves on a deterministic 6 × 6 RGB grid. Coordinates start at (1, 1) in the top left. Moves into walls or across the boundary leave the agent in place. The four supplied moves determine the final cell. Use static walls and position as the full dynamic state so the simulator can resume from any legal halfway cell.
 
-The contribution sought is a controlled interaction between token intervention, compositional depth, and relevant/irrelevant evidence edits. Filler gains, token replacement, graph benchmarks, and matched modalities have prior art; no first-ever or mechanistic novelty claim is made. Behavioral reliability does not prove an internal algorithm, and graph hops need not equal internal sequential steps.
+Generate an original map, a relevant edit that relocates a wall and changes the final cell, and an irrelevant edit that relocates an off-path wall and preserves the entire route. Save each map, the moves, the four visited cells, and the final answer. Present the same four distinct candidate cells in the same order for all three variants. Balance correct answer letters across families. Keep all variants and any symbolic views together in train, development, or test. Reject duplicate map/query combinations across splits.
 
-## Hypotheses and decision rules
+The confirmation set contains 400–600 held-out **four-step families**. Choose the exact count using the pilot before opening the test set. One-step families belong to the perception pilot. A text rendering of the same grid can help diagnose failures to read the image.
 
-| Hypothesis | Prespecified test |
+## One slot per move
+
+Use the same revision of Qwen2.5-VL-3B-Instruct in both runs. The decoder receives the initial image and a fixed instruction, then move 1, slot 1, move 2, slot 2, move 3, slot 3, move 4, slot 4, followed by the candidate cells and the answer cue. Each slot is a learned input embedding. Its contextual state can depend on the initial scene and moves supplied so far. This ordering keeps later moves and answer choices outside the second slot's causal context. The training target is the letter for the final cell.
+
+| Condition | Objective |
 | --- | --- |
-| H1: Post-problem fillers improve reliable composition | 64 dot tokens versus no filler on answer-changing pair correctness, equally weighted across depths 2 and 4 |
-| H2: Effects depend on evidence-relative placement | 64 post-problem versus 64 pre-problem dot tokens |
-| H3: Improvements survive nuisance changes | Answer-preserving pair correctness, fact reordering, and consistent node renaming |
-| H4: The intervention generalizes to visual presentation | Fixed intervention on matched image/text instances in the same checkpoint |
-| H5: Reliable evidence use improves sequential decisions | Paired navigation success and action regret; stretch only |
+| L1, answer-only LoRA | Final-answer cross-entropy. |
+| L2, future-state-supervised LoRA | The same answer loss plus a weighted average of four frame-alignment losses. Slot 1 targets the frame after move 1, through slot 4 and the frame after move 4. |
 
-For H1, the proposed practical threshold is +5 percentage points. A 95% confidence interval above zero supports a positive effect; above +5 supports a meaningful effect. An upper bound below +5 rules out that prespecified benefit at the achieved precision. Boundary-crossing intervals are inconclusive. Negative results do not fail the project.
+For L2, minimize one minus the cosine similarity between a linear projection of each slot state and the corresponding frame embedding. Use the residual stream after the middle decoder block (block ⌊D/2⌋, one-based, for D blocks) for supervision, probes, and swaps. Mean-pool the frozen vision encoder's spatial features of each simulator frame to obtain a fixed-width target. Verify in the pilot that the targets distinguish neighboring agent positions on the same map. The projection head is used only for the auxiliary loss. Only the initial image is supplied to the decoder.
 
-## Canonical dataset
+Match checkpoint revision, initial slot embeddings and adapters, LoRA rank and target modules, examples, order, optimizer, number of updates, precision, and decoding. Freeze the alignment weight and training budget on development data. Record one shared training seed. With one matched pair, test-family intervals describe these two fitted models. Variation across training seeds remains an open question.
 
-- Twelve nodes, two directed relation types; each relation is a permutation with one incoming/outgoing edge per node.
-- Queries specify a start and relation sequence at depths 1, 2, and 4. Deterministic traversal supplies the endpoint. Reject repeated nodes on the queried trajectory initially.
-- Present shuffled edge lists with neutral labels and explicit definitions.
-- Each family contains original, relevant-edit, and irrelevant-edit instances. Two-edge target swaps within a relation preserve degrees/edge count. Independently verify the relevant edit changes the endpoint and the irrelevant edit preserves it.
-- Four fixed choices within a family contain both original/edited endpoints and two distractors. Randomize option order across families and balance correct positions.
-- Keep graph size fixed across depth. Record query length separately and use matched-length diagnostics without claiming to remove all difficulty confounds.
-- Match edited prompt token lengths where possible; apply fact reordering and consistent renaming on a secondary subset.
-- Split by base graph/query family, keeping edits/renderings together. Check exact and relabeling-equivalent duplicates. Use separate development and confirmation seeds.
+## Outcomes and interpretation
 
-The solver must attain 100%. A generator or edit-validation failure blocks model evaluation.
+1. **Primary behavioral outcome.** Score a family as one only when both the original and relevant-edit answers are correct. Use answer-letter logits at the answer cue and audit greedy outputs on a subset. Report each model's score and the paired L2 minus L1 difference. Use a 95% bootstrap interval with 10,000 draws of whole test families. The practical benefit threshold is +5 percentage points. Report whether the interval lies above, below, or crosses that threshold. Also report individual-map accuracy and joint correctness on the original and irrelevant edit.
+2. **Primary mechanism test.** Measure whether replacing the second slot shifts the answer toward the endpoint implied by its donor position. Apply the prespecified swap and control below to both models on identical eligible families.
+3. **Supporting probes.** Fit a linear coordinate classifier on each frozen slot using training families. Select regularization on development families and report held-out accuracy for the position after the corresponding move. Compare with a majority-cell baseline and the same probe on the preceding move token. These probes measure what can be read from each representation.
 
-## Interventions and baselines
+### Directional step-two swap
 
-| ID | Condition |
-| --- | --- |
-| C0 | No filler |
-| C1 | 16 post-problem dot tokens |
-| C2 | 64 post-problem dot tokens; fixed primary treatment |
-| C3 | 64 post-problem comma tokens |
-| C4 | 64 pre-problem dot tokens |
-| C5 | 64 post-problem tokens from a fixed punctuation mixture |
-| C6 | Predicted intermediate-node sequence, capped at 64 generated tokens |
+- Use the original map as recipient A, its relevant edit as donor B, and its irrelevant edit as control C. All three receive the same four moves. Require B to reach a different position after move two and C to reach the same position as A. The donor position must be traversable on A's map.
+- Before model inference, start the simulator at B's step-two cell **on A's map**, execute A's last two moves, and save the predicted alternative cell. Require it to differ from A's clean ground-truth endpoint and to appear among A's choices. Freeze eligibility from simulator facts alone and report the eligible count and fraction. Keep all families in the behavioral analysis.
+- For each model, replace only A's slot-two residual vector at the specified block with the corresponding vector from B. Repeat from a clean A run with C as the donor. Recompute downstream activations and answer probabilities with A's input. A self-swap must reproduce the clean logits within the recorded numerical tolerance.
+- For each patch, subtract A's clean probability of the predicted alternative from its patched probability of **that same alternative**, normalized over the four choices. The family score is the different-position shift minus the same-position shift. Report both shifts, the family score for each model, and the paired L2 minus L1 difference with a 95% interval from 10,000 resamples of eligible families.
+- A positive shift toward the predicted cell beyond the control supports use of step-two state information at the tested site. A larger contrast for L2 supports the supervision hypothesis. Report the clean behavioral score alongside this result. An accuracy gain alone leaves the mechanism unresolved, and a small patch effect can also reflect information carried at other positions or layers.
 
-Post-problem means after graph, query, and choices, immediately before the answer cue. Keep other content and the chat template fixed. Insert exact ordinary vocabulary IDs; reject special/control tokens and save IDs plus decoded text. Direct ID insertion may differ from typed punctuation.
+## Scope and related work
 
-Include chance/majority-choice baselines and the exact solver. Oracle intermediate states are diagnostic ceilings, not compute-only baselines. Record C6 transition validity, truncation, and actual cost rather than assuming equal compute.
+The core deliverable is the matched L1/L2 pair, behavioral results, and directional swap. Inference-only no-filler, dot-placement, or explicit-reasoning comparisons are secondary extensions if resources permit. The 25–45 GPU-hour allowance on a single 24 GB GPU is provisional.
 
-### Fixed, generated, and learned tokens
-
-Forced cached decoding of the identical sequence should match prefill within numerical tolerance when tokens, masks, positions, and model mode match. This is an integration check, not an independent reasoning mechanism. Model-selected fillers can encode information and are excluded from the core.
-
-Static learned embeddings and recurrent hidden-state feedback are different interventions; neither is required. If training is approved, compare no-slot/fixed-slot conditions with matched data, optimizer, adapter capacity, and updates across three seeds, reporting different compute. Learned slots require another matched condition. Replacement tests can induce distribution shift and do not alone establish reasoning.
-
-## Scoring and analysis
-
-For C0–C5, score four answer labels from logits at a fixed answer position; verify each is one token in that exact context. Audit unconstrained greedy generation on a subset and freeze scoring before confirmation.
-
-**Primary metric:** fraction of families with both original and relevant-edited answers correct. Estimate paired C2 minus C0, equally weighting depths 2 and 4. Do not change the primary contrast based on pilot gains.
-
-Secondary outcomes: accuracy per variant, answer-preserving pair correctness, prediction invariance, correctness transitions after edits, depth/template effects, C6 transition accuracy, invalid outputs, latency, tokens, and peak memory. Invariance alone rewards constant wrong answers and is insufficient.
-
-Bootstrap base families, stratified by depth, using 10,000 resamples. Preserve pairing. Apply Holm correction to families of secondary significance tests; label exploratory analyses. Deterministic reruns are not independent samples.
-
-Plan initially for 400 families per depth. Use pilot discordance to fix 400–800 per depth before opening confirmation data. Target 80% power for a five-point paired effect where affordable; otherwise report achievable precision. Approximate planning: n ≈ (1.96 + 0.84)² q / 0.05², with q the discordant-outcome rate; respect the actual stratified design.
-
-## Models and training decision
-
-Default candidate: [Qwen2.5-VL-3B-Instruct](https://huggingface.co/Qwen/Qwen2.5-VL-3B-Instruct), supporting text and images in one checkpoint. Alternatives: [SmolLM2-1.7B-Instruct](https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct) for text and [SmolVLM2-2.2B-Instruct](https://huggingface.co/HuggingFaceTB/SmolVLM2-2.2B-Instruct) for smaller multimodal inference. Choose by competence, observability, and resources—not filler uplift. Fix precision/quantization across conditions.
-
-Training is not necessary for the inference-only scientific question. Current course acceptance must be confirmed with the TA/rubric. The instructor's [historical Fall 2021 handout](https://www.cs.columbia.edu/~zemel/Class/Nndl/project_handout.pdf) allows analysis projects but is not the current rubric. If training is required, substitute a bounded matched-training study for extension work and amend the specification before execution.
-
-## Planned visual and navigation extensions
-
-Render the same graphs with fixed node positions across edits, readable arrows, and redundant relation encodings. Keep the intervention unchanged across modalities. Report absolute modality effects and their difference; a nonsignificant interaction does not establish equivalence. One-hop/edge-extraction controls only imperfectly distinguish perception failures; perception-correct subset analyses are secondary.
-
-Navigation tests H5 in a deterministic fully observable gridworld with position, orientation, walls, key, door, and goal. Begin with symbolic observations; add images only after vision feasibility. Compare C0, fixed C2, explicit intermediates, and an exact planner on paired worlds. Test route-relevant and irrelevant edits, balancing optimal path length across subgoal depths. Score membership in the set of optimal actions, episode success, collisions, action regret, successful-path efficiency, and total latency. Bootstrap world families and allow trajectories to diverge. Conclusions concern simulation, not physical robots or learned dynamics.
-
-## Related work
-
-Core filler-token references are in the [README](../README.md#selected-literature). Further context:
-
-- [Coconut](https://arxiv.org/abs/2412.06769): recurrent continuous thoughts.
-- [Mull-Tokens](https://arxiv.org/abs/2512.10941): learned multimodal latent tokens.
-- [Not All LLM Reasoning is Visible in the Chain-of-Thought](https://arxiv.org/abs/2607.22925): synthetic filler studies and mechanistic diagnostics.
-- [GraphVerse](https://arxiv.org/abs/2608.06769) and [TwinICL](https://arxiv.org/abs/2609.15028): visual graph and paired-modality evaluation.
-- [DeFacto](https://arxiv.org/abs/2509.20912): counterfactual evidence consistency.
-- [Latent Reasoning VLA](https://proceedings.mlr.press/v306/bai26h.html): embodied context.
-
-These sources motivate controls and limit novelty claims; none constitutes JEVLab experimental evidence.
+Ablate-to-Validate found that replacing token content often preserved much of the accuracy gain. WM-VLM found a sharp performance drop when its generated intermediate visual states were removed or corrupted on mental rotation tasks. The grid experiment holds the model and task fixed and tests the destination predicted by a specific state substitution. [Ablate-to-Validate](https://arxiv.org/abs/2605.21642) · [WM-VLM](https://arxiv.org/abs/2609.34826)

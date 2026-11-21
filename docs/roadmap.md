@@ -1,62 +1,26 @@
-# Implementation roadmap and collaboration gates
+# ReasonSpace implementation roadmap
 
-**Planning only.** No milestone below claims implementation or experimental completion. [Specification](research_proposal.md) · [Overview](../README.md)
+The semester deliverable is one matched pair of four-step, four-slot LoRA runs. The central comparison asks whether supervision from each future frame changes the model's use of its halfway position. All milestones below are planned. [Research specification](research_proposal.md) · [Course proposal](proposal/reasonspace_proposal.pdf)
 
-## Before coding
-
-Confirm the current rubric (including training requirements), GPU/VRAM and hours, deadline, ownership, checkpoint, fixed C2–C0 contrast, five-point practical threshold, and sample-size rule. Recheck teammate changes. Document any scope change in the proposal.
-
-## Milestones
-
-| Milestone | Proposed files within existing folders | Acceptance checks |
+| Milestone | Work | Completion check |
 | --- | --- | --- |
-| M0: Protocol | Future `configs/text_pilot.json`, `configs/text_confirmatory.json` | Reject missing seeds/revisions and unknown conditions |
-| M1: Dataset | Future `src/graphs.py`, `src/dataset.py`, focused `tests/` | Hand-checked traversal, determinism, valid edits, degree preservation, balanced labels, split isolation |
-| M2: Measurement | Future `src/model.py`, `src/interventions.py` | Exact token counts/positions, no special fillers, stable answers, batch/single and cached/prefill agreement |
-| M3: Pilot | Future `src/evaluate.py`; `experiments/token_evidence/` | Resume without duplicates; retain errors; measured runtime/memory; gates below |
-| M4: Core | Future `src/analyze.py`; frozen manifest and predictions | Hand-computed metric fixtures, paired bootstrap, depth weights, missing-condition detection, regenerable figures |
-| M5: Vision | Future `src/render.py`, `configs/vision_pilot.json` | Fixed layout, graph/render correspondence, legibility, resolution/token controls |
-| M6: Report | Results/reproduction instructions in `docs/` and `experiments/` | Claims trace to saved outputs; failed pilots and limitations disclosed |
+| 1. Benchmark | Generate original, relevant-edit, and irrelevant-edit 6 × 6 maps. Save simulator states after every move, shared answer choices, family IDs, and split manifests. | Replay all labels and hybrid endpoints. Verify family isolation, balanced answer letters, legal donor cells, and unchanged control routes. |
+| 2. Pilot | Use 60 one-step families to check perception and 60 four-step families to estimate difficulty and swap eligibility. Profile a short L1 and L2 training run on the allocated GPU. | Target at least 85% one-step visual accuracy and 35–85% four-step baseline accuracy. If perception is limiting, inspect matched text views and try one renderer or resolution adjustment on development data. Record eligible counts, peak memory, and time per update. |
+| 3. Training and intervention checks | Interleave each move with one learned slot. Extract the middle-block states and frozen frame targets. Implement answer scoring, slot-two swaps, and same-position controls. | Verify slot two cannot see moves three or four. Test frame sensitivity to a one-cell move. Confirm self-swaps reproduce clean logits and that each patch recomputes downstream activations. |
+| 4. Protocol freeze and matched training | Fix the model revision, seed, family manifests, exact test count within 400–600, training-set size, optimizer, updates, LoRA settings, auxiliary loss weight, precision, and hook site. Train L1 and L2 on identical four-step examples in the same order. | Save both checkpoints and configurations. Verify matching slot/adapter initialization and training logs. Reserve intermediate frames for auxiliary targets. |
+| 5. Held-out evaluation | Score both models on every four-step test family. Run both patches on all simulator-eligible families. Fit coordinate probes on training families and evaluate them on held-out families. | Report paired correctness with the +5-point practical threshold, irrelevant-edit joint correctness, clean and patched probabilities, control-adjusted directional shifts, eligible denominators, and paired family-bootstrap intervals. |
+| 6. Course report | Regenerate figures and tables from saved per-family predictions and simulation records. | Discuss separately the behavioral effect, information decoded by probes, and effect of the directional intervention. Document null results, pilot changes, measured compute, and the single-seed limitation. |
 
-These filenames are proposed, not existing modules. Keep generation, evaluation, and analysis independently runnable. Tests and generation must not download models; model integration checks require explicit opt-in. Notebooks are exploratory, not the sole source of final metrics.
+## Team and compute
 
-## Text pilot
+Confirm the GPU allocation, deadline, and division of work with the three-person team and TA mentor Todd Morrill. The benchmark owner produces the split and simulator records, the modeling owner trains both conditions, and the evaluation owner validates the swap and paired analysis.
 
-Use 60 families per depth: 180 families and 540 instances. C0–C4 yield 2,700 scored evaluations; add cached/prefill checks on 30 inputs and C6 on 60 originals.
+| Work on one 24 GB GPU | Provisional allowance |
+| --- | --- |
+| Perception, training, and intervention pilots | 2–4 GPU-hours |
+| Matched L1 and L2 training | 12–20 GPU-hours |
+| Held-out predictions and coordinate probes | 5–10 GPU-hours |
+| Directional swaps, controls, and reruns | 6–11 GPU-hours |
+| **Total** | **25–45 GPU-hours** |
 
-Pass only if all generator/edit/split/token/scoring checks pass, one-hop baseline accuracy is at least 85%, at least one deeper baseline lies between 35% and 85%, and projected confirmation cost fits the allocation. These bands are engineering gates, not findings.
-
-Permit one documented development-only benchmark revision. Persistent floor/ceiling performance requires review, not indefinite searching for filler gains. Zero/negative filler uplift does not fail the pilot. Freeze prompts, scoring, model revisions, contrast, and sample size before confirmation.
-
-## Vision gate
-
-Start with 60 development families and inspect all renderings. Target ≥85% one-hop endpoint accuracy and ≥90% targeted edge-extraction accuracy, with deeper performance above chance and usable headroom. Check image-token cost/runtime. Permit one renderer/resolution revision; otherwise report the perception bottleneck and defer the full extension.
-
-After passing, compare C0 and fixed C2 on new matched text/image families, with C6 on a subset. Do not retune filler identity/count on images. Fix layouts across edits and retain full-population results alongside labelled conditional diagnostics.
-
-## Navigation gate
-
-Proceed only after the text core is complete and reproducible evidence sensitivity or a specific failure mode motivates closed-loop evaluation. Require remaining compute and reporting time. Follow [H5's protocol](research_proposal.md#planned-visual-and-navigation-extensions). Physical hardware, large simulators, and VLA training are not routine extensions.
-
-## Resource estimates
-
-Planning allowances, not measured compatibility or results; replace with pilot measurements.
-
-| Work | Scale | Allowance |
-| --- | --- | --- |
-| Text pilot | About 3,000 evaluations | 1–4 GPU-hours |
-| Confirmation | 400 families/depth × 3 variants × 6 conditions = 21,600 evaluations | 3–18 GPU-hours at 0.5–3 seconds/evaluation |
-| Text diagnostics/intermediates/reruns | Selected subsets | 5–15 GPU-hours |
-| Vision pilot/selected confirmation | Roughly 5,000–10,000 evaluations | 5–25 GPU-hours |
-
-Reserve approximately 20–40 GPU-hours for text and another 10–30 for vision. Doubling families doubles confirmation evaluations. Plan Qwen inference around one 16–24 GB GPU with small batches/bounded resolution; smaller candidates may need less memory. Training needs a separately profiled budget and approval.
-
-For two contributors, a provisional four-week sequence is benchmark/measurement, pilot/protocol freeze, confirmation/analysis, then reporting/gated vision. Actual dates depend on the deadline and availability. Protect reporting time before adding extensions.
-
-## Reproducibility and review
-
-Record repository commit/configuration hash; model/tokenizer/processor revisions; package versions; hardware, precision and attention backend; generator version/seeds; family/split IDs and hashes; assembled token IDs and filler offsets; image/visual-token metadata; choice scores, predictions, answers/errors; warm-up policy, latency, and memory. Preserve all pilot revisions.
-
-The existing `requirements.txt` is unpinned and unvalidated. Pin a tested environment only after implementation approval. Never commit credentials or large weights/data. Check ignore rules so compact manifests and predictions remain tracked or have a documented artifact location.
-
-Use focused branches and PRs to `main`; no force pushes or unrelated refactors. State hypothesis, changed behavior, checks/commands, observed outputs, cost, and limitations in experiment PRs. Separate documentation and experiment code. Review the diff and status before committing.
+Replace these allowances with the pilot measurements before committing to a training schedule. If time is tight, drop optional inference-only filler comparisons first. Preserve the matched pair and both swap conditions. If resources only allow the pilot, report feasibility and leave the supervision question open.

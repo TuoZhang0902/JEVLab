@@ -1,53 +1,26 @@
 # ReasonSpace
 
-**Extra Tokens and Evidence-Sensitive Reasoning**
+**Do latent slots track an agent's position across four moves?**
 
 Columbia University · COMS W4776: Neural Networks and Deep Learning
 
-Can additional computational tokens improve reasoning without providing additional information? JEVLab investigates whether filler tokens help models compose evidence reliably—or simply change their responses.
+An agent takes four moves on a visual grid. We will train two versions of Qwen2.5-VL-3B-Instruct to predict its final cell. Both models have one learned slot after each move. L1 learns from the final answer. L2 also learns to predict the visual state after each move.
 
-## Research direction
+The simulator lets us test a specific prediction. If we replace the second slot with one from a different halfway position, does the model assign more probability to the destination reachable from that position? An off-path wall edit gives us a control that preserves the halfway position.
 
-| Stage | Focus |
-| --- | --- |
-| **Text reasoning — core** | Controlled multi-hop graph problems with filler-token interventions and relevant/irrelevant evidence changes |
-| **Visual reasoning — planned** | Equivalent graph problems rendered as images |
-| **Robot decision-making — stretch** | Transfer to sequential decisions in simulated navigation |
+## Project materials
 
-## Approach
+**Planning stage, updated November 19, 2026.** The roadmap starts with a visual perception check and a short training pilot. The primary experiment is a matched L1/L2 comparison on four-step visual routes.
 
-We compare direct answers, fixed filler tokens, and explicit intermediate steps on matched problem instances. Controls vary token count, identity, placement, and reasoning depth while keeping the underlying task fixed.
-
-The primary measure is **answer-changing pair correctness**: the model must answer both an original problem and its relevantly edited version correctly. We also measure robustness to irrelevant changes, accuracy, latency, and memory use. Accuracy gains alone do not establish an internal reasoning mechanism.
-
-## Status and documentation
-
-**Planning stage.** No experiments or results yet. Next steps are to validate the graph benchmark, run a small text pilot, and finalize the evaluation protocol. Visual and navigation experiments depend on feasibility and findings from earlier stages.
-
-- [Research specification](docs/research_proposal.md): hypotheses, dataset, models, and evaluation.
-- [Experimental roadmap](docs/roadmap.md): milestones, pilot criteria, tests, and resource estimates.
-
-## Repository
-
-- `docs/` — research specification and roadmap
-- `src/` — future experiment code
-- `configs/` — future experiment configurations
-- `experiments/` — future records and results
-- `notebooks/` — exploratory analysis
-
-The code and experiment directories currently contain placeholders. Dependencies are provisional.
+- [Two-page course proposal](docs/proposal/reasonspace_proposal.pdf)
+- [Research specification and decision rules](docs/research_proposal.md)
+- [Milestones and provisional GPU budget](docs/roadmap.md)
+- [LaTeX source ZIP](docs/proposal/reasonspace_source.zip)
 
 ## Selected literature
 
-- [Think before you speak: Training Language Models With Pause Tokens](https://arxiv.org/abs/2310.02226)
-- [Let's Think Dot by Dot: Hidden Computation in Transformer Language Models](https://arxiv.org/abs/2404.15758)
-- [Expanding Computation Spaces of LLMs at Inference Time](https://arxiv.org/abs/2509.24884)
-- [Ablate-to-Validate: Are Vision-Language Models Really Using Continuous Thought Tokens?](https://arxiv.org/abs/2605.21642)
-
-Additional references are listed in the [research specification](docs/research_proposal.md#related-work).
-
-## Collaboration
-
-Use focused changes with clear descriptions and reproducible checks. Keep experiment configurations and compact results traceable; exclude credentials, model weights, and large datasets from Git.
+- [Think before you speak: Pause Tokens](https://arxiv.org/abs/2310.02226) · [Let's Think Dot by Dot](https://arxiv.org/abs/2404.15758) · [Expanding Computation Spaces at Inference Time](https://arxiv.org/abs/2509.24884)
+- [Fast-ThinkAct (CVPR 2026)](https://arxiv.org/abs/2601.09708) · [LaRA-VLA (ICML 2026)](https://arxiv.org/abs/2602.01166)
+- [Ablate-to-Validate](https://arxiv.org/abs/2605.21642) · [WM-VLM](https://arxiv.org/abs/2609.34826)
 
 **Team:** Charles Gao, Tuo Zhang, and Jiahao Zhang
